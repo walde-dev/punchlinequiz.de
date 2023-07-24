@@ -10,7 +10,7 @@ export default function Home() {
     <div className="mt-36 flex w-full max-w-5xl flex-1 flex-col">
       {punchlines[punchline] && (
         <Quote
-          punchline={punchlines[punchline]}
+          punchline={punchlines[punchline]!}
           getNextLine={() =>
             setPunchline((punchline) => {
               return punchline === punchlines.length - 1 ? 0 : punchline + 1;
