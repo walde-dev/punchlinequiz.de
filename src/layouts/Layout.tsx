@@ -17,7 +17,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         />
         <meta name="author" content="Waldemar Panin" />
       </Head>
-      <div className="flex min-h-screen w-screen items-center justify-center space-x-1">
+      <div className="flex py-[200px] items-center justify-center space-x-1">
         <Logo />
         <span>- coming soon</span>
       </div>

@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
     <div className="flex w-full flex-row text-lg font-medium justify-center items-center space-x-1">
-      <span>private beta</span>
+      {/* <span>private beta</span> */}
       <span>
         by{" "}
         <a
