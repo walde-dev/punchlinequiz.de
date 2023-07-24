@@ -1,9 +1,18 @@
 export interface Punchline {
   unsolved: string[];
   solved: string;
-  artist: string;
-  song: string;
-  album: string;
+  artist: {
+    solved: string;
+    solutions: string[];
+  };
+  song: {
+    solved: string;
+    solutions: string[];
+  };
+  album: {
+    solved: string;
+    solutions: string[];
+  };
   year: number;
   solutions: string[];
 }
@@ -15,9 +24,24 @@ export const punchlines: Punchline[] = [
       "Und färbt ein ganzes Viertel rot",
     ],
     solved: "wie bei'm Windows-Zeichen",
-    artist: "Kollegah",
-    song: "Intro",
-    album: "Zuhältertape Vol. 4",
+    artist: {
+      solved: "Kollegah",
+      solutions: ["kollegah", "kolle", "T.O.N.I", "T.o.n.i."],
+    },
+    song: {
+      solved: "Intro",
+      solutions: ["intro"],
+    },
+    album: {
+      solved: "Zuhältertape Vol. 4",
+      solutions: [
+        "zht4",
+        "zuhältertape 4",
+        "zuhältertape vol. 4",
+        "zht vol. 4",
+        "zht 4",
+      ],
+    },
     year: 2015,
     solutions: ["wie beim windows zeichen"],
   },
@@ -27,9 +51,23 @@ export const punchlines: Punchline[] = [
       "Mit dem Aufreißer hochzugehen",
     ],
     solved: "wie 'ne Briefbombe",
-    artist: "Kollegah",
-    song: "Alarmanlage",
-    album: "Chronik III",
+    artist: {
+      solved: "Kollegah",
+      solutions: ["kollegah", "kolle", "T.O.N.I", "T.o.n.i."],
+    },
+    song: {
+      solved: "Alarmanlage",
+      solutions: ["alarmanlage"],
+    },
+    album: {
+      solved: "Chronik III",
+      solutions: [
+        "chronik 3",
+        "chronik iii",
+        "chronik vol. 3",
+        "chronik vol. iii",
+      ],
+    },
     year: 2015,
     solutions: [
       "wie ne briefbombe",
@@ -44,9 +82,18 @@ export const punchlines: Punchline[] = [
       "Für die Schuhe wurden so einige Alligatore geschossen",
     ],
     solved: "wie für die Meisterschale",
-    artist: "Kollegah",
-    song: "Business Paris",
-    album: "Bossaura",
+    artist: {
+      solved: "Kollegah",
+      solutions: ["kollegah", "kolle", "T.O.N.I", "T.o.n.i."],
+    },
+    song: {
+      solved: "Business Paris",
+      solutions: ["business paris", "bisiness paris"],
+    },
+    album: {
+      solved: "Bossaura",
+      solutions: ["bossaura"],
+    },
     year: 2010,
     solutions: [
       "wie für die meisterschale",
