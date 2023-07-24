@@ -24,25 +24,25 @@ export const punchlines: Punchline[] = [
   {
     unsolved: [
       "Aufreizende Damen vorm Hotel warten auf die Chance",
-      "Mit dem Aufreißer hochzugehen wie",
+      "Mit dem Aufreißer hochzugehen",
     ],
     solved: "'ne Briefbombe",
     artist: "Kollegah",
     song: "Alarmanlage",
     album: "Chronik III",
     year: 2015,
-    solutions: ["ne briefbombe", "eine briefbombe"],
+    solutions: ["wie ne briefbombe", "wie eine briefbombe"],
   },
   {
     unsolved: [
       "Shoppt die Designermarken",
-      "Für die Schuhe wurden so einige Alligatore geschossen wie",
+      "Für die Schuhe wurden so einige Alligatore geschossen",
     ],
     solved: "für die Meisterschale",
     artist: "Kollegah",
     song: "Business Paris",
     album: "Bossaura",
     year: 2010,
-    solutions: ["für die meisterschale", "die meisterschale", "meisterschale"],
+    solutions: ["wie für die meisterschale", "wie die meisterschale", "meisterschale"],
   },
 ];
