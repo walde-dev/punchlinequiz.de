@@ -2,6 +2,7 @@ import { type Punchline, punchlines } from "~/punchlines/lines";
 import classNames from "classnames";
 import { UseFormRegister, useForm } from "react-hook-form";
 import { useState } from "react";
+import { Logo } from "~/components/Header";
 
 export default function Home() {
   const [punchline, setPunchline] = useState(0);
