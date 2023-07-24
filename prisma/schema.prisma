@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-    provider = "sqlite"
+    provider = "postgresql"
     // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
     // Further reading:
     // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
@@ -64,3 +64,68 @@ model VerificationToken {
 
     @@unique([identifier, token])
 }
+
+//convert this object into a table in the database
+// export interface Punchline {
+//   unsolved: string[];
+//   solved: string;
+//   artist: {
+//     solved: string;
+//     solutions: string[];
+//   };
+//   song: {
+//     solved: string;
+//     solutions: string[];
+//   };
+//   album: {
+//     solved: string;
+//     solutions: string[];
+//   };
+//   year: number;
+//   solutions: string[];
+// }
+
+model Punchline {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    unsolved  String[]
+    solved    String
+    artist    Artist   @relation(fields: [artistId], references: [id])
+    song      Song     @relation(fields: [songId], references: [id])
+    album     Album    @relation(fields: [albumId], references: [id])
+    year      Int
+    solutions String[]
+    artistId  String
+    songId    String
+    albumId   String
+}
+
+model Artist {
+    id        String      @id @default(cuid())
+    createdAt DateTime    @default(now())
+    updatedAt DateTime    @updatedAt
+    solved    String
+    solutions String[]
+    Punchline Punchline[]
+}
+
+model Song {
+    id        String      @id @default(cuid())
+    createdAt DateTime    @default(now())
+    updatedAt DateTime    @updatedAt
+    solved    String
+    solutions String[]
+    Punchline Punchline[]
+}
+
+model Album {
+    id        String      @id @default(cuid())
+    createdAt DateTime    @default(now())
+    updatedAt DateTime    @updatedAt
+    solved    String
+    solutions String[]
+    Punchline Punchline[]
+}
+
+
