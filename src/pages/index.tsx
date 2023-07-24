@@ -1,6 +1,6 @@
 import { type Punchline, punchlines } from "~/punchlines/lines";
 import classNames from "classnames";
-import { UseFormRegister, useForm } from "react-hook-form";
+import { FieldError, UseFormRegister, useForm } from "react-hook-form";
 import { use, useEffect, useState } from "react";
 import { sanitizeString } from "~/lib/helpers";
 
@@ -288,10 +288,8 @@ export function Quote({
           answer={answer}
           name="answer"
           placeholder="Wie geht die Line weiter?"
+          errors={errors.answer}
         />
-        {!!errors && (
-          <span className="text-lg text-red-400">{errors.answer?.message}</span>
-        )}
 
         {correct.answer && (
           <InputField
@@ -300,6 +298,7 @@ export function Quote({
             answer={answer}
             name="artist"
             placeholder="Wer hat diese Line gerappt?"
+            errors={errors.artist}
           />
         )}
 
@@ -310,6 +309,7 @@ export function Quote({
             answer={answer}
             name="song"
             placeholder="Wie heißt der Song?"
+            errors={errors.song}
           />
         )}
 
@@ -320,6 +320,7 @@ export function Quote({
             answer={answer}
             name="album"
             placeholder="Wie heißt das Album?"
+            errors={errors.album}
           />
         )}
 
@@ -366,12 +367,14 @@ export function InputField({
   answer,
   name,
   placeholder,
+  errors,
 }: {
   register: UseFormRegister<FormValues>;
   correct: boolean;
   answer: string;
   name: keyof FormValues;
   placeholder?: string;
+  errors?: FieldError | undefined;
 }) {
   return (
     <div
@@ -410,6 +413,9 @@ export function InputField({
           </button>
         )}
       </div>
+      {!!errors && (
+        <span className="text-lg text-red-400">{errors?.message}</span>
+      )}
     </div>
   );
 }
