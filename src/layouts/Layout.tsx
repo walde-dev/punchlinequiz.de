@@ -4,7 +4,7 @@ import Header from "~/components/Header";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex min-h-screen w-screen flex-col items-center overflow-hidden bg-black tracking-tighter text-white  md:px-60 md:pt-10">
+    <div className="relative flex min-h-screen w-screen flex-col items-center overflow-hidden bg-black tracking-tighter text-white  lg:px-80 md:px-60 md:pt-10">
       <Head>
         <title>Punchline Quiz</title>
         <meta
