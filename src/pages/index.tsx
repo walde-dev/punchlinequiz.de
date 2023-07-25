@@ -1,28 +1,25 @@
-import { type Punchline, punchlines } from "~/punchlines/lines";
+import { type Punchline } from "~/punchlines/lines";
 import classNames from "classnames";
 import { FieldError, UseFormRegister, useForm } from "react-hook-form";
 import { use, useEffect, useState } from "react";
 import { sanitizeString } from "~/lib/helpers";
+import { useCheckAnswer, useRandomPunchline } from "~/api";
 
 export default function Home() {
-  //random int from punchlines array
-  const [punchline, setPunchline] = useState(0);
-
-  useEffect(() => {
-    setPunchline(Math.floor(Math.random() * punchlines.length));
-  }, []);
+  //call the randomPunchline function to get a random punchline
+  const {
+    data: punchline,
+    refetch: getNewPunchline,
+    isLoading,
+    isError,
+    error,
+  } = useRandomPunchline();
+  
 
   return (
     <div className="mt-36 flex w-full max-w-5xl flex-1 flex-col">
-      {punchlines[punchline] && (
-        <Quote
-          punchline={punchlines[punchline]!}
-          getNextLine={() =>
-            setPunchline((punchline) => {
-              return punchline === punchlines.length - 1 ? 0 : punchline + 1;
-            })
-          }
-        />
+      {punchline && (
+        <Quote punchline={punchline} getNextLine={() => getNewPunchline} />
       )}
     </div>
   );
@@ -49,6 +46,18 @@ export function Quote({
     setValue,
     formState: { errors },
   } = useForm<FormValues>();
+
+  //checkAnswer mutate
+  const { mutate: checkAnswer } = useCheckAnswer({
+    onSuccess: (data) => {
+      setCorrect((correct) => {
+        return {
+          ...correct,
+          answer: data,
+        };
+      });
+    },
+  });
 
   const [submittedAnswer, setSubmittedAnswer] = useState<{
     answer: string;
@@ -84,20 +93,14 @@ export function Quote({
         };
       });
       //check if answer is correct
-      const isAnswerCorrect = punchline.solutions.some((word, index) => {
-        return sanitizeString(word) === sanitizeString(data.answer);
-      });
-
-      setCorrect((correct) => {
-        return {
-          ...correct,
-          answer: isAnswerCorrect,
-        };
+      checkAnswer({
+        answer: data.answer,
+        id: punchline.id,
       });
 
       const input = document.getElementById("answer_input");
       if (input) {
-        if (isAnswerCorrect) {
+        if (correct.answer) {
           input.classList.add("border-primary");
           input.classList.remove("border-red-500", "border-white/60");
         } else {
