@@ -106,15 +106,22 @@ model Artist {
     solved    String
     solutions String[]
     Punchline Punchline[]
+    Song      Song?       @relation(fields: [songId], references: [id])
+    songId    String?
+    Album     Album?      @relation(fields: [albumId], references: [id])
+    albumId   String?
 }
 
 model Song {
     id        String      @id @default(cuid())
+    artistId  String
     createdAt DateTime    @default(now())
     updatedAt DateTime    @updatedAt
     solved    String
     solutions String[]
     Punchline Punchline[]
+    Artist    Artist[]
+    Album     Album[]
 }
 
 model Album {
@@ -124,4 +131,6 @@ model Album {
     solved    String
     solutions String[]
     Punchline Punchline[]
+    Artist    Artist[] 
+    Song      Song[]
 }

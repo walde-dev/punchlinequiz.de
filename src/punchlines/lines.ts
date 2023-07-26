@@ -17,3 +17,23 @@ export interface Punchline {
   year: number;
   solutions: string[];
 }
+
+export interface Song {
+  id: number;
+  solved: string;
+  solutions: string[];
+  artist: Artist[];
+}
+
+export interface Album {
+  id: number;
+  solved: string;
+  solutions: string[];
+  artist: Artist[];
+}
+
+export interface Artist {
+  id: number;
+  solved: string;
+  solutions: string[];
+}
