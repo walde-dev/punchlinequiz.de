@@ -14,7 +14,6 @@ export default function Home() {
     isError,
     error,
   } = useRandomPunchline();
-  
 
   return (
     <div className="mt-36 flex w-full max-w-5xl flex-1 flex-col">

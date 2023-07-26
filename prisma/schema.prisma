@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
@@ -9,79 +6,7 @@ datasource db {
     provider          = "postgresql"
     url               = env("POSTGRES_PRISMA_URL") // uses connection pooling
     directUrl         = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
-    shadowDatabaseUrl = env("POSTGRES_URL_NON_POOLING") // used for migrations
 }
-
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-}
-
-// Necessary for Next auth
-model Account {
-    id                String  @id @default(cuid())
-    userId            String
-    type              String
-    provider          String
-    providerAccountId String
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
-    expires_at        Int?
-    token_type        String?
-    scope             String?
-    id_token          String? // @db.Text
-    session_state     String?
-    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    @@unique([provider, providerAccountId])
-}
-
-model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-}
-
-model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
-
-    @@unique([identifier, token])
-}
-
-//convert this object into a table in the database
-// export interface Punchline {
-//   unsolved: string[];
-//   solved: string;
-//   artist: {
-//     solved: string;
-//     solutions: string[];
-//   };
-//   song: {
-//     solved: string;
-//     solutions: string[];
-//   };
-//   album: {
-//     solved: string;
-//     solutions: string[];
-//   };
-//   year: number;
-//   solutions: string[];
-// }
 
 model Punchline {
     id        String   @id @default(cuid())
@@ -89,39 +14,38 @@ model Punchline {
     updatedAt DateTime @updatedAt
     unsolved  String[]
     solved    String
-    artist    Artist   @relation(fields: [artistId], references: [id])
-    song      Song     @relation(fields: [songId], references: [id])
-    album     Album    @relation(fields: [albumId], references: [id])
     year      Int
     solutions String[]
     artistId  String
     songId    String
     albumId   String
+    album     Album    @relation(fields: [albumId], references: [id])
+    artist    Artist   @relation(fields: [artistId], references: [id])
+    song      Song     @relation(fields: [songId], references: [id])
 }
 
 model Artist {
-    id        String      @id @default(cuid())
-    createdAt DateTime    @default(now())
-    updatedAt DateTime    @updatedAt
-    solved    String
-    solutions String[]
-    Punchline Punchline[]
-    Song      Song?       @relation(fields: [songId], references: [id])
-    songId    String?
-    Album     Album?      @relation(fields: [albumId], references: [id])
-    albumId   String?
+    id          String      @id @default(cuid())
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+    solved      String
+    solutions   String[]
+    songId      String?
+    albumId     String?
+    punchlineId String?
+    Album       Album?      @relation(fields: [albumId], references: [id])
+    Song        Song?       @relation(fields: [songId], references: [id])
+    Punchline   Punchline[]
 }
 
 model Song {
     id        String      @id @default(cuid())
-    artistId  String
     createdAt DateTime    @default(now())
     updatedAt DateTime    @updatedAt
     solved    String
     solutions String[]
-    Punchline Punchline[]
     Artist    Artist[]
-    Album     Album[]
+    Punchline Punchline[]
 }
 
 model Album {
@@ -130,7 +54,6 @@ model Album {
     updatedAt DateTime    @updatedAt
     solved    String
     solutions String[]
+    Artist    Artist[]
     Punchline Punchline[]
-    Artist    Artist[] 
-    Song      Song[]
 }
