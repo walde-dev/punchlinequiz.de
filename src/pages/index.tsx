@@ -3,17 +3,10 @@ import classNames from "classnames";
 import { FieldError, UseFormRegister, useForm } from "react-hook-form";
 import { use, useEffect, useState } from "react";
 import { sanitizeString } from "~/lib/helpers";
-import { useCheckAnswer, useRandomPunchline } from "~/api";
+
 
 export default function Home() {
   //call the randomPunchline function to get a random punchline
-  const {
-    data: punchline,
-    refetch: getNewPunchline,
-    isLoading,
-    isError,
-    error,
-  } = useRandomPunchline();
 
   return (
     <div className="mt-36 flex w-full max-w-5xl flex-1 flex-col">

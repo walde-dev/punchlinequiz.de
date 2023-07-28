@@ -7,7 +7,11 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "db-seed": "NODE_ENV=development prisma db seed"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.15",
@@ -28,6 +32,7 @@
     "react-hook-form": "^7.45.2",
     "react-query": "^3.39.3",
     "superjson": "1.12.2",
+    "tsx": "^3.12.7",
     "zod": "^3.21.4"
   },
   "devDependencies": {
