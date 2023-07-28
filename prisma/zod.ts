@@ -1,14 +1,11 @@
 import { z } from "zod";
 
-export const ArtistModel = z.object({
+export const AlbumModel = z.object({
   id: z.number(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   solved: z.string(),
   solutions: z.array(z.string()),
-  songId: z.string().array().nullable(),
-  albumId: z.string().array().nullable(),
-  punchlineId: z.string().array().nullable(),
 });
 
 export const SongModel = z.object({
@@ -17,5 +14,23 @@ export const SongModel = z.object({
   updatedAt: z.string().datetime(),
   solved: z.string(),
   solutions: z.string().array(),
-  artistId: z.string(),
+});
+
+export const PunchlineModel = z.object({
+  id: z.number(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  solved: z.string(),
+  solutions: z.string().array(),
+});
+
+export const ArtistModel = z.object({
+  id: z.number(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  solved: z.string(),
+  solutions: z.array(z.string()),
+  Album: z.array(AlbumModel).nullable(),
+  Song: z.array(SongModel).nullable(),
+  Punchline: z.array(PunchlineModel).nullable().optional(),
 });

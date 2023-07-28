@@ -7,7 +7,14 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query";
-import { addAlbum, addArtist, getArtists, getSongs } from "~/lib/api";
+import {
+  addAlbum,
+  addArtist,
+  addSong,
+  getAlbums,
+  getArtists,
+  getSongs,
+} from "~/lib/api";
 import Dropdown from "~/components/Dropdown";
 import { ArtistModel, SongModel } from "prisma/zod";
 import { z } from "zod";
@@ -172,7 +179,7 @@ function AlbumForm() {
   interface FormValues {
     name: string;
     solutions: string;
-    artist: string;
+    artist: number;
   }
 
   const [error, setError] = useState("");
@@ -186,9 +193,11 @@ function AlbumForm() {
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
-      artist: "",
+      artist: 0,
     },
   });
+
+  const [selectedArtist, setSelectedArtist] = useState("");
 
   const { mutate: addAlbumMutation, isLoading: addAlbumMutationLoading } =
     useMutation(["addAlbum"], addAlbum, {
@@ -206,15 +215,17 @@ function AlbumForm() {
 
   const onSubmit = (data: FormValues) => {
     if (!artists) return console.log("Artists not found");
+
     const artistId = artists.find(
-      (artist) => artist.solved === data.artist
+      (artist) => artist.solved === selectedArtist
     )?.id;
+
     if (!artistId) return console.log("Artist not found");
     try {
       addAlbumMutation({
         solved: data.name,
         solutions: data.solutions,
-        artist: artistId,
+        artistId: artistId,
       });
     } catch (error) {
       console.log(error);
@@ -249,20 +260,147 @@ function AlbumForm() {
             items={artists?.map((artist) => {
               return artist.solved;
             })}
-            selectedItem={watch("artist")}
-            setSelectedItem={(item) => {
-              setValue("artist", item);
-            }}
             {...register("artist", { required: true })}
+            selectedItem={selectedArtist}
+            setSelectedItem={setSelectedArtist}
           />
         </>
       )}
       <button
-        disabled={addAlbumMutationLoading || !watch("artist")}
+        disabled={addAlbumMutationLoading}
         type="submit"
         className="rounded-md bg-gray-800 px-4 py-2 disabled:opacity-50"
       >
         {addAlbumMutationLoading ? "Adding..." : "Add"}
+      </button>
+      <span className="text-sm text-red-500">{error}</span>
+    </form>
+  );
+}
+
+function SongForm() {
+  interface FormValues {
+    name: string;
+    solutions: string;
+    artist: number;
+    album: number;
+  }
+
+  const [error, setError] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<FormValues>({
+    defaultValues: {
+      artist: 0,
+      album: 0,
+    },
+  });
+
+  const [selectedArtist, setSelectedArtist] = useState("");
+  const [selectedAlbum, setSelectedAlbum] = useState("");
+
+  const { mutate: addSongMutation, isLoading: addSongMutationLoading } =
+    useMutation(["addSong"], addSong, {
+      onError: (error) => {
+        if (error instanceof Error) setError(error.message);
+      },
+      onSuccess: () => {
+        reset();
+      },
+    });
+
+  const { data: artists } = useQuery(["getArtists"], getArtists, {
+    // staleTime: 1000 * 60 * 60 * 24,
+  });
+
+  const { data: albums } = useQuery(["getAlbums"], getAlbums, {
+    // staleTime: 1000 * 60 * 60 * 24,
+  });
+
+  const onSubmit = (data: FormValues) => {
+    if (!artists) return console.log("Artists not found");
+    if (!albums) return console.log("Albums not found");
+
+    const artistId = artists.find(
+      (artist) => artist.solved === selectedArtist
+    )?.id;
+
+    const albumId = albums.find((album) => album.solved === selectedAlbum)?.id;
+
+    if (!artistId) return console.log("Artist not found");
+    if (!albumId) return console.log("Album not found");
+
+    try {
+      addSongMutation({
+        solved: data.name,
+        solutions: data.solutions,
+        artistId: artistId,
+        albumId: albumId,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col space-y-5">
+      <div className="flex flex-col space-y-2">
+        <label htmlFor="name">Name</label>
+        <input
+          id="name"
+          type="text"
+          className="input"
+          {...register("name", { required: true })}
+        />
+      </div>
+      <div className="flex flex-col space-y-2">
+        <label htmlFor="solutions">Solutions</label>
+        <input
+          id="solutions"
+          type="text"
+          className="input"
+          {...register("solutions", { required: true })}
+        />
+        <span className="text-gray-400">Seperate by using comma </span>
+      </div>
+      {!!artists && (
+        <>
+          <label htmlFor="artist">Artist</label>
+          <Dropdown
+            items={artists?.map((artist) => {
+              return artist.solved;
+            })}
+            {...register("artist", { required: true })}
+            selectedItem={selectedArtist}
+            setSelectedItem={setSelectedArtist}
+          />
+        </>
+      )}
+      {!!albums && (
+        <>
+          <label htmlFor="album">Albums</label>
+          <Dropdown
+            items={albums?.map((album) => {
+              return album.solved;
+            })}
+            {...register("album", { required: true })}
+            selectedItem={selectedAlbum}
+            setSelectedItem={setSelectedAlbum}
+          />
+        </>
+      )}
+      <button
+        disabled={addSongMutationLoading}
+        type="submit"
+        className="rounded-md bg-gray-800 px-4 py-2 disabled:opacity-50"
+      >
+        {addSongMutationLoading ? "Adding..." : "Add"}
       </button>
       <span className="text-sm text-red-500">{error}</span>
     </form>
@@ -274,7 +412,7 @@ function TableForm({ selectedForm }: { selectedForm: Tab }) {
     <div className="mt-8">
       {selectedForm === "punchline" && <PunchlineForm />}
       {selectedForm === "artist" && <ArtistForm />}
-      {/* {selectedForm === "song" && <BasicForm />} */}
+      {selectedForm === "song" && <SongForm />}
       {selectedForm === "album" && <AlbumForm />}
     </div>
   );
