@@ -12,9 +12,8 @@ model Punchline {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  unsolved  String[]
+  answer    String
   solved    String
-  year      Int
   solutions String[]
   artistId  Int
   songId    Int
@@ -25,14 +24,14 @@ model Punchline {
 }
 
 model Artist {
-  id          Int         @id @default(autoincrement())
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  solved      String      @unique
-  solutions   String[]
-  Album       Album[]
-  Song        Song[]
-  Punchline   Punchline[]
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  solved    String      @unique
+  solutions String[]
+  Album     Album[]
+  Song      Song[]
+  Punchline Punchline[]
 }
 
 model Song {
@@ -44,7 +43,7 @@ model Song {
   Artist    Artist[]
   Punchline Punchline[]
   Album     Album?      @relation(fields: [albumId], references: [id])
-  albumId   Int?
+  albumId   Int
 }
 
 model Album {

@@ -1,8 +1,19 @@
-import { AlbumModel, ArtistModel, SongModel } from "prisma/zod";
+import {
+  AlbumModel,
+  ArtistModel,
+  PunchlineModel,
+  SongModel,
+  randomPunchlineModel,
+} from "prisma/zod";
 import { z } from "zod";
 
 const AddItemReturnSchema = z.object({
   message: z.string(),
+});
+
+const CheckAnswerSchema = z.object({
+  correct: z.boolean(),
+  answer: z.string().optional(),
 });
 
 export async function addSong({
@@ -120,4 +131,72 @@ export async function getAlbums(): Promise<z.infer<typeof AlbumModel>[]> {
   });
 
   return z.array(AlbumModel).parse(await res.json());
+}
+
+export async function addPunchline({
+  solutions,
+  solved,
+  answer,
+  artistId,
+  songId,
+}: {
+  solutions: string;
+  solved: string;
+  answer: string;
+  artistId: number;
+  songId: number;
+}) {
+  const res = await fetch("/api/punchlines", {
+    method: "POST",
+    body: JSON.stringify({
+      solutions,
+      solved,
+      answer,
+      artistId,
+      songId,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Error creating punchline.");
+  }
+
+  return AddItemReturnSchema.parse(await res.json());
+}
+
+export async function getRandomPunchline(): Promise<
+  z.infer<typeof randomPunchlineModel>
+> {
+  const res = await fetch("/api/punchlines/random", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return randomPunchlineModel.parse(await res.json());
+}
+
+export async function checkPunchline({
+  punchlineId,
+  answer,
+}: {
+  punchlineId: number;
+  answer: string;
+}): Promise<z.infer<typeof CheckAnswerSchema>> {
+  const res = await fetch("/api/punchlines/checkAnswer", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      punchlineId,
+      answer,
+    }),
+  });
+
+  return CheckAnswerSchema.parse(await res.json());
 }

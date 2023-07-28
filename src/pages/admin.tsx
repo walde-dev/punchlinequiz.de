@@ -10,9 +10,11 @@ import {
 import {
   addAlbum,
   addArtist,
+  addPunchline,
   addSong,
   getAlbums,
   getArtists,
+  getRandomPunchline,
   getSongs,
 } from "~/lib/api";
 import Dropdown from "~/components/Dropdown";
@@ -47,17 +49,20 @@ export default function Admin() {
 function PunchlineForm() {
   interface FormValues {
     punchline: string;
+    answer: string;
     solutions: string;
-    artist: number;
-    song: number;
-    album: number;
   }
+
+  const [selectedArtist, setSelectedArtist] = useState("");
+  const [selectedSong, setSelectedSong] = useState("");
+  const [error, setError] = useState("");
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<FormValues>();
 
@@ -65,13 +70,60 @@ function PunchlineForm() {
     ["getSongs"],
     getSongs,
     {
-      staleTime: 1000 * 60 * 60 * 24,
+      // staleTime: 1000 * 60 * 60 * 24,
     }
   );
 
+  const { data: artists, refetch: refetchArtists } = useQuery(
+    ["getArtists"],
+    getArtists,
+    {
+      // staleTime: 1000 * 60 * 60 * 24,
+    }
+  );
+
+  const {
+    mutate: addPunchlineMutation,
+    isLoading: addPunchlineMutationLoading,
+  } = useMutation(["addPunchline"], addPunchline, {
+    onError: (error) => {
+      if (error instanceof Error) setError(error.message);
+    },
+    onSuccess: () => {
+      reset();
+    },
+  });
+
+  const {
+    data: randomPunchline,
+    isLoading,
+    refetch,
+  } = useQuery(["getRandomPunchline"], getRandomPunchline);
+
   const onSubmit = (data: FormValues) => {
-    const solutions = data.solutions.split(",").map((s) => s.trim());
-    console.log(data);
+    if (!artists) return console.log("Artists not found");
+    if (!songs) return console.log("Songs not found");
+
+    const artistId = artists?.find(
+      (artist) => artist.solved === selectedArtist
+    )?.id;
+
+    const songId = songs?.find((song) => song.solved === selectedSong)?.id;
+
+    if (!artistId) return console.log("Artist not found");
+    if (!songId) return console.log("Song not found");
+
+    try {
+      addPunchlineMutation({
+        artistId,
+        songId,
+        solutions: data.solutions,
+        solved: data.punchline,
+        answer: data.answer,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -84,7 +136,7 @@ function PunchlineForm() {
           className="input"
           {...register("punchline", { required: true })}
         />
-        <span className="text-gray-400">Seperate by using comma </span>
+        <span className="text-gray-400">Seperate by using ; </span>
       </div>
       <div className="flex flex-col space-y-2">
         <label htmlFor="solutions">Solutions</label>
@@ -94,16 +146,54 @@ function PunchlineForm() {
           className="input"
           {...register("solutions", { required: true })}
         />
-        <span className="text-gray-400">Seperate by using comma </span>
+        <span className="text-gray-400">Seperate by using ; </span>
       </div>
-      {/* <Dropdown
-        items={songs?.map((song) => {
-          return { id: song.id, name: song.name };
-        })}
-      /> */}
-      <button type="submit" className="rounded-md bg-gray-800 px-4 py-2">
-        Add
+      <div className="flex flex-col space-y-2">
+        <label htmlFor="unsolved">Answer</label>
+        <input
+          id="unsolved"
+          type="text"
+          className="input"
+          {...register("answer", { required: true })}
+        />
+        <span className="text-gray-400">Seperate by using ; </span>
+      </div>
+      {!!artists && (
+        <>
+          <label htmlFor="artist">Artist</label>
+          <Dropdown
+            items={artists?.map((artist) => {
+              return artist.solved;
+            })}
+            selectedItem={selectedArtist}
+            setSelectedItem={setSelectedArtist}
+          />
+        </>
+      )}
+      {!!songs && selectedArtist && (
+        <>
+          <label htmlFor="songs">Song</label>
+          <Dropdown
+            items={songs
+              ?.filter((song) =>
+                song.Artist?.some((artist) => artist.solved === selectedArtist)
+              )
+              .map((song) => {
+                return song.solved;
+              })}
+            selectedItem={selectedSong}
+            setSelectedItem={setSelectedSong}
+          />
+        </>
+      )}
+      <button
+        disabled={addPunchlineMutationLoading}
+        type="submit"
+        className="rounded-md bg-gray-800 px-4 py-2 disabled:opacity-50"
+      >
+        {addPunchlineMutationLoading ? "Adding..." : "Add"}
       </button>
+      <span className="text-sm text-red-500">{error}</span>
     </form>
   );
 }
@@ -260,7 +350,6 @@ function AlbumForm() {
             items={artists?.map((artist) => {
               return artist.solved;
             })}
-            {...register("artist", { required: true })}
             selectedItem={selectedArtist}
             setSelectedItem={setSelectedArtist}
           />
@@ -382,13 +471,19 @@ function SongForm() {
           />
         </>
       )}
-      {!!albums && (
+      {!!albums && !!selectedArtist && (
         <>
           <label htmlFor="album">Albums</label>
           <Dropdown
-            items={albums?.map((album) => {
-              return album.solved;
-            })}
+            items={albums
+              ?.filter((album) => {
+                return album.Artist?.some(
+                  (artist) => artist.solved === selectedArtist
+                );
+              })
+              .map((album) => {
+                return album.solved;
+              })}
             {...register("album", { required: true })}
             selectedItem={selectedAlbum}
             setSelectedItem={setSelectedAlbum}

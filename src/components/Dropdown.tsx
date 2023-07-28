@@ -22,7 +22,7 @@ const Dropdown = (props: Props) => {
   const [query, setQuery] = useState("");
 
   const filtered =
-    query === ""
+    query === "" || query === null || query === undefined
       ? props.items
       : props.items.filter((item) => {
           return item.toLowerCase().includes(query.toLowerCase());
@@ -30,10 +30,13 @@ const Dropdown = (props: Props) => {
 
   return (
     <Combobox value={props.selectedItem} onChange={props.setSelectedItem}>
-      <Combobox.Input
-        className="input w-full"
-        onChange={(event) => setQuery(event.target.value)}
-      />
+      <Combobox.Button as="div">
+        <Combobox.Input
+          className="input w-full"
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </Combobox.Button>
+
       <Combobox.Options className="input mt-2">
         {filtered.map((item) => (
           <Combobox.Option

@@ -16,7 +16,12 @@ export default async function handler(
 ) {
   if (req.method === "GET") {
     try {
-      const albums = await prisma.album.findMany();
+      const albums = await prisma.album.findMany({
+        include: {
+          Artist: true,
+          Song: true,
+        },
+      });
       res.status(200).json(albums);
     } catch (err) {
       console.error("Error fetching albums:", err);

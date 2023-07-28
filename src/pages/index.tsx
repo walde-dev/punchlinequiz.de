@@ -3,15 +3,40 @@ import classNames from "classnames";
 import { FieldError, UseFormRegister, useForm } from "react-hook-form";
 import { use, useEffect, useState } from "react";
 import { sanitizeString } from "~/lib/helpers";
-
-
+import {
+  checkPunchline,
+  getArtists,
+  getRandomPunchline,
+  getSongs,
+} from "~/lib/api";
+import {
+  AlbumModel,
+  ArtistModel,
+  PunchlineModel,
+  SongModel,
+  randomPunchlineModel,
+} from "prisma/zod";
+import { z } from "zod";
+import {
+  dehydrate,
+  QueryClient,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 export default function Home() {
-  //call the randomPunchline function to get a random punchline
+  const {
+    data: randomPunchline,
+    isLoading,
+    refetch,
+  } = useQuery(["getRandomPunchline"], getRandomPunchline);
 
   return (
     <div className="mt-36 flex w-full max-w-5xl flex-1 flex-col">
-      {punchline && (
-        <Quote punchline={punchline} getNextLine={() => getNewPunchline} />
+      {randomPunchline && (
+        <Quote
+          punchline={randomPunchline}
+          getNextLine={refetch as () => void}
+        />
       )}
     </div>
   );
@@ -24,11 +49,23 @@ export interface FormValues {
   album: string;
 }
 
+// if (correct.answer) {
+//       input.classList.add("border-primary");
+//       input.classList.remove("border-red-500", "border-white/60");
+//     } else {
+//       input.classList.add("border-red-500");
+//       input.classList.remove("border-white/60");
+//       input.classList.add("animate-shake");
+//       setTimeout(() => {
+//         input.classList.remove("border-red-500", "animate-shake");
+//       }, 1000);
+//     }
+
 export function Quote({
   punchline,
   getNextLine,
 }: {
-  punchline: Punchline;
+  punchline: z.infer<typeof randomPunchlineModel>;
   getNextLine: () => void;
 }) {
   const {
@@ -39,199 +76,46 @@ export function Quote({
     formState: { errors },
   } = useForm<FormValues>();
 
-  //checkAnswer mutate
-  const { mutate: checkAnswer } = useCheckAnswer({
+  const {
+    data: checkAnswerData,
+    mutate: checkAnswerMutation,
+    isLoading: checkAnswerMutationLoading,
+  } = useMutation(["checkAnswer"], checkPunchline, {
     onSuccess: (data) => {
-      setCorrect((correct) => {
-        return {
-          ...correct,
-          answer: data,
-        };
-      });
+      console.log(data);
     },
   });
 
-  const [submittedAnswer, setSubmittedAnswer] = useState<{
-    answer: string;
-    artist: string;
-    song: string;
-    album: string;
-  }>({
-    answer: "",
-    artist: "",
-    song: "",
-    album: "",
-  });
-  const [correct, setCorrect] = useState<{
-    answer: boolean;
-    artist: boolean;
-    song: boolean;
-    album: boolean;
-  }>({
-    answer: false,
-    artist: false,
-    song: false,
-    album: false,
-  });
+  const unsolvedText = punchline.text.split(";").filter((a) => a.trim());
+  const answerInput = watch("answer");
 
   const onSubmit = (data: FormValues) => {
-    //check which input was submitted
-
-    if (data.answer && !correct.answer) {
-      setSubmittedAnswer((submittedAnswer) => {
-        return {
-          ...submittedAnswer,
-          answer: data.answer,
-        };
-      });
-      //check if answer is correct
-      checkAnswer({
-        answer: data.answer,
-        id: punchline.id,
-      });
-
-      const input = document.getElementById("answer_input");
-      if (input) {
-        if (correct.answer) {
-          input.classList.add("border-primary");
-          input.classList.remove("border-red-500", "border-white/60");
-        } else {
-          input.classList.add("border-red-500");
-          input.classList.remove("border-white/60");
-          input.classList.add("animate-shake");
-          setTimeout(() => {
-            input.classList.remove("border-red-500", "animate-shake");
-          }, 1000);
-        }
-      }
-    }
-
-    if (data.artist && !correct.artist) {
-      setSubmittedAnswer((submittedAnswer) => {
-        return {
-          ...submittedAnswer,
-          artist: data.artist,
-        };
-      });
-      const isArtistCorrect = punchline.artist.solutions.some((word, index) => {
-        return sanitizeString(word) === sanitizeString(data.artist);
-      });
-      setCorrect((correct) => {
-        return {
-          ...correct,
-          artist: isArtistCorrect,
-        };
-      });
-
-      const input = document.getElementById("artist_input");
-      if (input) {
-        if (isArtistCorrect) {
-          input.classList.add("border-primary");
-          input.classList.remove("border-red-500", "border-white/60");
-        } else {
-          input.classList.add("border-red-500");
-          input.classList.remove("border-white/60");
-          input.classList.add("animate-shake");
-          setTimeout(() => {
-            input.classList.remove("border-red-500", "animate-shake");
-          }, 1000);
-        }
-      }
-    }
-
-    if (data.song && !correct.song) {
-      setSubmittedAnswer((submittedAnswer) => {
-        return {
-          ...submittedAnswer,
-          song: data.song,
-        };
-      });
-      const isSongCorrect = punchline.song.solutions.some((word, index) => {
-        return sanitizeString(word) === sanitizeString(data.song);
-      });
-      setCorrect((correct) => {
-        return {
-          ...correct,
-          song: isSongCorrect,
-        };
-      });
-
-      const input = document.getElementById("song_input");
-      if (input) {
-        if (isSongCorrect) {
-          input.classList.add("border-primary");
-          input.classList.remove("border-red-500", "border-white/60");
-        } else {
-          input.classList.add("border-red-500");
-          input.classList.remove("border-white/60");
-          input.classList.add("animate-shake");
-          setTimeout(() => {
-            input.classList.remove("border-red-500", "animate-shake");
-          }, 1000);
-        }
-      }
-    }
-
-    if (data.album && !correct.album) {
-      setSubmittedAnswer((submittedAnswer) => {
-        return {
-          ...submittedAnswer,
-          album: data.album,
-        };
-      });
-      const isAlbumCorrect = punchline.album.solutions.some((word, index) => {
-        return sanitizeString(word) === sanitizeString(data.album);
-      });
-      setCorrect((correct) => {
-        return {
-          ...correct,
-          album: isAlbumCorrect,
-        };
-      });
-
-      const input = document.getElementById("album_input");
-      if (input) {
-        if (isAlbumCorrect) {
-          input.classList.add("border-primary");
-          input.classList.remove("border-red-500", "border-white/60");
-        } else {
-          input.classList.add("border-red-500");
-          input.classList.remove("border-white/60");
-          input.classList.add("animate-shake");
-          setTimeout(() => {
-            input.classList.remove("border-red-500", "animate-shake");
-          }, 1000);
-        }
-      }
-    }
+    const answer = checkAnswerMutation({
+      answer: data.answer,
+      punchlineId: punchline.id,
+    });
   };
-
-  const answer = watch("answer");
-
   return (
     <div className="relative">
       <div className="relative flex flex-col space-y-6 rounded-3xl border border-primary/50 p-8 font-quote">
-        {punchline.unsolved.map((word, index) => (
+        {unsolvedText.map((word, index) => (
           <p key={index} className="inline-block text-5xl">
             {word}{" "}
-            {index === punchline.unsolved.length - 1 && (
+            {index === unsolvedText.length - 1 && (
               <span
                 className={` ${
-                  correct.answer
+                  checkAnswerData?.correct
                     ? "underline decoration-primary"
-                    : !!submittedAnswer && "underline decoration-red-500"
+                    : !checkAnswerData?.correct &&
+                      "underline decoration-red-500"
                 }`}
               >
-                {!!submittedAnswer.answer
-                  ? correct.answer
-                    ? punchline.solved
-                    : submittedAnswer.answer
-                  : "_____"}
+                {!!checkAnswerData?.correct ? checkAnswerData?.answer : "_____"}
               </span>
             )}
           </p>
         ))}
-        {correct.answer && (
+        {/* {correct.answer && (
           <div className="absolute bottom-0 right-0 translate-y-full pt-2 font-sans text-lg">
             <span className="">
               {correct.artist ? punchline.artist.solved : "_____"} -{" "}
@@ -240,7 +124,7 @@ export function Quote({
               {punchline.year}
             </span>
           </div>
-        )}
+        )} */}
         <svg
           width="42"
           height="42"
@@ -279,14 +163,14 @@ export function Quote({
       >
         <InputField
           register={register}
-          correct={correct.answer}
-          answer={answer}
+          correct={checkAnswerData?.correct ?? false}
+          answer={watch("answer")}
           name="answer"
           placeholder="Wie geht die Line weiter?"
           errors={errors.answer}
         />
 
-        {correct.answer && (
+        {/* {correct.answer && (
           <InputField
             register={register}
             correct={correct.artist}
@@ -323,10 +207,10 @@ export function Quote({
           <div className="mt-24 text-2xl">
             <span className="text-primary">Richtig!</span>
           </div>
-        )}
+        )} */}
       </form>
 
-      {correct.answer && (
+      {/* {correct.answer && (
         <button
           className="mt-24 text-2xl"
           onClick={() => {
@@ -351,7 +235,7 @@ export function Quote({
         >
           Nächste Line <span className="text-primary">→</span>
         </button>
-      )}
+      )} */}
     </div>
   );
 }
@@ -413,4 +297,17 @@ export function InputField({
       )}
     </div>
   );
+}
+
+export async function getStaticProps() {
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery(["getSongs"], getSongs);
+  await queryClient.prefetchQuery(["getArtists"], getArtists);
+
+  return {
+    props: {
+      dehydratedState: dehydrate(queryClient),
+    },
+  };
 }
