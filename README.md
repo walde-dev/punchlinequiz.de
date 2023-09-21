@@ -1,1 +1,1 @@
-##punchlinequiz.de
+#punchlinequiz.de
